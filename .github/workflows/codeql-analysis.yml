@@ -3,16 +3,13 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL Current Report"
+name: "CodeQL SAST Scan"
+
 on:
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: "Log level"
-        required: true
-        default: "warning"
-      tags:
-        description: "CodeQL Manual SAST Scanning with Report"
+  pull_request:
+    # The branches below must be a subset of the branches above
+    #This run was triggered by the "push" event, which is unsupported. Please ensure you are using the "pull_request" event for this workflow.
+    branches: ["master"]
 
 jobs:
   analyze:
@@ -22,12 +19,14 @@ jobs:
       actions: read
       contents: read
       security-events: write
+
     strategy:
       fail-fast: false
       matrix:
         language: ["python"]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -43,15 +42,11 @@ jobs:
 
           # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
           queries: security-extended
-          #,security-and-quality
+          #security-and-quality
+
+      # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+      # If this step fails, then you should remove it and run the build manually (see below)
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
-      - name: Generate Security Report
-        uses: peter-murray/github-security-report-action@v2
-        with:
-          token: ${{ secrets.SECURITY_TOKEN }}
-      - name: Upload Artifacts to Workflow
-        uses: actions/upload-artifact@v3
-        with:
-          #The output directory for the PDF reports, defaults to github.workspace
-          path: ${{ github.workspace }}/*.pdf
